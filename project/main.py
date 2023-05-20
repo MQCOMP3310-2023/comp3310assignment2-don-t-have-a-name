@@ -74,7 +74,7 @@ def showMenu(restaurant_id):
     return render_template('menu.html', items = items, restaurant = restaurant)
      
 
-
+#create new menu item
 @main.route('/restaurant/<int:restaurant_id>/menu/new/',methods=['GET','POST'])
 def newMenuItem(restaurant_id):
   restaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
@@ -108,7 +108,7 @@ def newMenuItem(restaurant_id):
       return render_template('newmenuitem.html', restaurant_id = restaurant_id)
 
 
-
+#edit menu items
 @main.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET','POST'])
 def editMenuItem(restaurant_id, menu_id):
 
