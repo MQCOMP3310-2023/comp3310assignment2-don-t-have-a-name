@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for
 from .models import Restaurant, MenuItem
 from sqlalchemy import asc
 from . import db
+import re
 
 main = Blueprint('main', __name__)
 
@@ -13,16 +14,24 @@ def showRestaurants():
   return render_template('restaurants.html', restaurants = restaurants)
 
 #Create a new restaurant
+import re
+
 @main.route('/restaurant/new/', methods=['GET','POST'])
 def newRestaurant():
   if request.method == 'POST':
-      newRestaurant = Restaurant(name = request.form['name'])
-      db.session.add(newRestaurant)
-      flash('New Restaurant %s Successfully Created' % newRestaurant.name)
-      db.session.commit()
-      return redirect(url_for('main.showRestaurants'))
-  else:
+    name = request.form['name']
+    # Check if name contains only letters, spaces and '
+    if not re.match("^[a-zA-Z ']*$", name):  
+      flash('Valid name should only include letters, space and single quote.')
       return render_template('newRestaurant.html')
+    newRestaurant = Restaurant(name=name)
+    db.session.add(newRestaurant)
+    flash('New Restaurant %s Successfully Created' % newRestaurant.name)
+    db.session.commit()
+    return redirect(url_for('main.showRestaurants'))
+  else:
+    return render_template('newRestaurant.html')
+
 
 #Edit a restaurant
 @main.route('/restaurant/<int:restaurant_id>/edit/', methods = ['GET', 'POST'])
