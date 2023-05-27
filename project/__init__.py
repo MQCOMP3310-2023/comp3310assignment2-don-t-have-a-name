@@ -1,17 +1,25 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
+from flask_login import LoginManager
+from flask_authorize import Authorize
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
+
+#initalising LoginManager a
+login_manager = LoginManager()
+
+authorize = Authorize()
 
 def create_app():
     app = Flask(__name__)
 
+    #Only for testing dont do this
     app.config['SECRET_KEY'] = 'secret-key-do-not-reveal'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurantmenu.db'
 
+    login_manager.init_app(app)
     db.init_app(app)
-
+    authorize.init_app(app)
     # blueprint for auth routes in our app
     from .json import json as json_blueprint
     app.register_blueprint(json_blueprint)
