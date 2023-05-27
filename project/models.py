@@ -44,10 +44,14 @@ class Role(db.Model, AllowancesMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, unique=True)
 
-class Restaurant(db.Model):
+class Restaurant(db.Model,PermissionsMixin):
     
     __tablename__ = 'restaurants'
-    
+    __permissions__ = dict(
+        owner=['read','create', 'update', 'delete', 'revoke'],
+        group=['read', 'update'],
+        other=['read']
+    )
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
