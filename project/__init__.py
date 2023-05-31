@@ -1,3 +1,6 @@
+import base64
+import hashlib
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
@@ -7,7 +10,11 @@ db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
 
-    app.config['SECRET_KEY'] = 'secret-key-do-not-reveal'
+    encoded_secret_key = 'c2VjcmV0LWtleS1kby1ub3QtcmV2ZWFsCg=='  # secret key that is encoded in base64
+    decoded_secret_key = base64.b64decode(encoded_secret_key).decode() #the decoded base-64 code
+    hashed_secret_key = hashlib.md5(decoded_secret_key.encode()).hexdigest()#the base-64 encoded secret key will undergo md5 encryption
+
+    app.config['SECRET_KEY'] = hashed_secret_key
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///restaurantmenu.db'
 
     db.init_app(app)
