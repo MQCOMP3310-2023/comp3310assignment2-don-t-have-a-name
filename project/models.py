@@ -37,21 +37,21 @@ class Group(db.Model, RestrictionsMixin):
     name = db.Column(db.String(255), nullable=False, unique=True)
 
 
-class Role(db.Model, AllowancesMixin):
+class Role(db.Model, AllowancesMixin, RestrictionsMixin):
     __tablename__ = 'roles'
     __restrictions__ = '*'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, unique=True)
 
-class Restaurant(db.Model,PermissionsMixin):
+class Restaurant(db.Model):
     
-    __tablename__ = 'restaurants'
-    __permissions__ = dict(
-        owner=['read','create', 'update', 'delete', 'revoke'],
-        group=['read', 'update'],
-        other=['read']
-    )
+    # __tablename__ = 'restaurant'
+    # __permissions__ = dict(
+    #     owner=['read','create', 'update', 'delete', 'revoke'],
+    #     group=['read', 'update'],
+    #     other=['read']
+    # )
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
