@@ -26,6 +26,7 @@ def login_post():
 
     user = User.query.filter_by(email=email).first()
 
+    
     # check if the user actually exists
     # take the user-supplied password and compare it with the stored password
     if not user or (user.is_password_correct(password) == False):
@@ -34,6 +35,7 @@ def login_post():
         if user is None:
             return redirect(url_for('auth.login')) # if the user doesn't exist reload the page
         elif user.passwordAttempts >= 5:
+            
             flash('Too many incorrect password attempts, try again later')
             return redirect(url_for('auth.login'), code=429)
         else:
@@ -41,7 +43,10 @@ def login_post():
             db.session.commit()
         return redirect(url_for('auth.login')) 
     # if the above check passes, then we know the user has the right credentials
-    login_user(user, remember=remember)
+    if user.passwordAttempts >= 5:
+            flash('Too many incorrect password attempts, try again later')
+            return redirect(url_for('auth.login'), code=429)
+    else :login_user(user, remember=remember)
     return redirect(url_for('main.showRestaurants'))
 
 @auth.route('/signup')
