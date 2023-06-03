@@ -4,6 +4,7 @@ from sqlalchemy import text
 from .models import User
 from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
+import re
 
 auth = Blueprint('auth', __name__)
 
@@ -13,7 +14,13 @@ def login():
 
 @auth.route('/login', methods=['POST'])
 def login_post():
-    email = request.form.get('email')
+    if request.form['email']:
+        inEmail = request.form['email']
+         #  name should contain only letters, spaces and '
+        if not re.match("^[a-zA-Z .@']*$", inEmail):  
+            flash('valid email only include letters, numbers, . and @ .')
+            login()
+        email = inEmail
     password = request.form.get('password')
     remember = True if request.form.get('remember') else False
 
@@ -24,8 +31,15 @@ def login_post():
     if not user or (user.is_password_correct(password) == False):
         flash('Please check your login details and try again.')
         current_app.logger.warning("User login failed")
-        return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
-
+        if user is None:
+            return redirect(url_for('auth.login')) # if the user doesn't exist reload the page
+        elif user.passwordAttempts >= 5:
+            flash('Too many incorrect password attempts, try again later')
+            return redirect(url_for('auth.login'), code=429)
+        else:
+            user.passwordAttempts = user.passwordAttempts + 1
+            db.session.commit()
+        return redirect(url_for('auth.login')) 
     # if the above check passes, then we know the user has the right credentials
     login_user(user, remember=remember)
     return redirect(url_for('main.showRestaurants'))
@@ -46,7 +60,7 @@ def signup_post():
         current_app.logger.debug("User email already exists")
         return redirect(url_for('auth.signup'))
 
-    # create a new user with the form data. TODO: Hash the password so the plaintext version isn't saved.
+    # create a new user with the form data.
     new_user = User(email=email, name=name)
     new_user.set_password(password)
 

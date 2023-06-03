@@ -17,7 +17,9 @@ def showRestaurants():
 #Create a new restaurant
 
 @main.route('/restaurant/new/', methods=['GET','POST'])
+@login_required
 def newRestaurant():
+  
   if request.method == 'POST':
     name = request.form['name']
     # Check if name contains only letters, spaces and '
@@ -35,6 +37,7 @@ def newRestaurant():
 
 #Edit a restaurant
 @main.route('/restaurant/<int:restaurant_id>/edit/', methods = ['GET', 'POST'])
+@login_required
 def editRestaurant(restaurant_id):
   editedRestaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
   if request.method == 'POST':
@@ -56,6 +59,7 @@ def editRestaurant(restaurant_id):
 
 #Delete a restaurant
 @main.route('/restaurant/<int:restaurant_id>/delete/', methods = ['GET','POST'])
+@login_required
 def deleteRestaurant(restaurant_id):
   restaurantToDelete = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
   if request.method == 'POST':
@@ -77,6 +81,7 @@ def showMenu(restaurant_id):
 
 #create new menu item
 @main.route('/restaurant/<int:restaurant_id>/menu/new/',methods=['GET','POST'])
+@login_required
 def newMenuItem(restaurant_id):
   restaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
   if request.method == 'POST':
@@ -111,6 +116,7 @@ def newMenuItem(restaurant_id):
 
 #edit menu items
 @main.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET','POST'])
+@login_required
 def editMenuItem(restaurant_id, menu_id):
 
     editedItem = db.session.query(MenuItem).filter_by(id = menu_id).one()
@@ -150,6 +156,7 @@ def editMenuItem(restaurant_id, menu_id):
 
 #Delete a menu item
 @main.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/delete', methods = ['GET','POST'])
+@login_required
 def deleteMenuItem(restaurant_id,menu_id):
     restaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
     itemToDelete = db.session.query(MenuItem).filter_by(id = menu_id).one() 

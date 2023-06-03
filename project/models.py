@@ -22,36 +22,30 @@ class User(db.Model, UserMixin):
     name = db.Column(db.String(255), nullable=False, unique=True)
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(100))
+    passwordAttempts = db.Column(db.Integer,default=0)
     roles = db.relationship('Role', secondary=UserRole)
     groups = db.relationship('Group', secondary=UserGroup)
+    
 
     def is_password_correct(self, password_plaintext: str):
         return check_password_hash(self.password, password_plaintext)
+        
+        
     def set_password(self, password_plaintext: str):
         self.password = generate_password_hash(password_plaintext)
 
-class Group(db.Model, RestrictionsMixin):
+class Group(db.Model):
     __tablename__ = 'groups'
-    __restrictions__ = '*'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, unique=True)
 
 
-class Role(db.Model, AllowancesMixin, RestrictionsMixin):
+class Role(db.Model):
     __tablename__ = 'roles'
-    __restrictions__ = '*'
-
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False, unique=True)
 
 class Restaurant(db.Model):
-    
-    # __tablename__ = 'restaurant'
-    # __permissions__ = dict(
-    #     owner=['read','create', 'update', 'delete', 'revoke'],
-    #     group=['read', 'update'],
-    #     other=['read']
-    # )
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(250), nullable=False)
@@ -66,11 +60,6 @@ class Restaurant(db.Model):
  
 class MenuItem(db.Model):
     __tablename__ = 'menuItem'
-    __permissions__ = dict(
-        owner=['read', 'update', 'delete', 'revoke'],
-        group=['read', 'update'],
-        other=['read']
-    )
     
     name = db.Column(db.String(80), nullable = False)
     id = db.Column(db.Integer, primary_key = True)
@@ -78,7 +67,7 @@ class MenuItem(db.Model):
     price = db.Column(db.String(8))
     course = db.Column(db.String(250))
     restaurant_id = db.Column(db.Integer,db.ForeignKey('restaurant.id'))
-    restaurant = db.    relationship(Restaurant)
+    restaurant = db.relationship(Restaurant)
 
     @property
     def serialize(self):
