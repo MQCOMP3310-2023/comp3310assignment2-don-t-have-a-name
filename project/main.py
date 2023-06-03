@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from .models import Restaurant, MenuItem
 from sqlalchemy import asc
 from . import db
+import re
 
 main = Blueprint('main', __name__)
 
@@ -14,16 +15,23 @@ def showRestaurants():
   return render_template('restaurants.html', restaurants = restaurants)
 
 #Create a new restaurant
+
 @main.route('/restaurant/new/', methods=['GET','POST'])
 def newRestaurant():
   if request.method == 'POST':
-      newRestaurant = Restaurant(name = request.form['name'])
-      db.session.add(newRestaurant)
-      flash('New Restaurant %s Successfully Created' % newRestaurant.name)
-      db.session.commit()
-      return redirect(url_for('main.showRestaurants'))
-  else:
+    name = request.form['name']
+    # Check if name contains only letters, spaces and '
+    if not re.match("^[a-zA-Z ']*$", name):  
+      flash('Valid name should only include letters, space and single quote.')
       return render_template('newRestaurant.html')
+    newRestaurant = Restaurant(name=name)
+    db.session.add(newRestaurant)
+    flash('New Restaurant %s Successfully Created' % newRestaurant.name)
+    db.session.commit()
+    return redirect(url_for('main.showRestaurants'))
+  else:
+    return render_template('newRestaurant.html')
+
 
 #Edit a restaurant
 @main.route('/restaurant/<int:restaurant_id>/edit/', methods = ['GET', 'POST'])
@@ -31,11 +39,19 @@ def editRestaurant(restaurant_id):
   editedRestaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
   if request.method == 'POST':
       if request.form['name']:
-        editedRestaurant.name = request.form['name']
+        name = request.form['name']
+        # Check if name contains only letters, spaces and '
+        if not re.match("^[a-zA-Z ']*$", name):  
+          flash('Invalid name. Name should only include letters, space and single quote.')
+          return render_template('editRestaurant.html', restaurant = editedRestaurant)
+        
+        editedRestaurant.name = name
         flash('Restaurant Successfully Edited %s' % editedRestaurant.name)
+        db.session.commit()
         return redirect(url_for('main.showRestaurants'))
   else:
     return render_template('editRestaurant.html', restaurant = editedRestaurant)
+
 
 
 #Delete a restaurant
@@ -59,13 +75,32 @@ def showMenu(restaurant_id):
     return render_template('menu.html', items = items, restaurant = restaurant)
      
 
-
-#Create a new menu item
+#create new menu item
 @main.route('/restaurant/<int:restaurant_id>/menu/new/',methods=['GET','POST'])
 def newMenuItem(restaurant_id):
   restaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
   if request.method == 'POST':
-      newItem = MenuItem(name = request.form['name'], description = request.form['description'], price = request.form['price'], course = request.form['course'], restaurant_id = restaurant_id)
+      name = request.form['name']
+      description = request.form['description']
+      price = request.form['price']
+      course = request.form['course']
+
+      # Check if name contains only letters, spaces, numbers,single quotes and dash
+      if not re.match("^[a-zA-Z0-9 '-]*$", name):  
+          flash('validName only include letters, space, single quotes and number.')
+          return render_template('newmenuitem.html', restaurant_id = restaurant_id)
+
+      # Check if description contains only letters, numbers, single-quote, comma, fullstop, and dash
+      if not re.match("^[a-zA-Z0-9 ',.-]*$", description):
+          flash('valid description only include letters, numbers, single-quote, commas, full stops, and dashes.')
+          return render_template('newmenuitem.html', restaurant_id = restaurant_id)
+
+      # Check if price contains only digits
+      if not price.isdigit():
+          flash('Valid price should only include digits.')
+          return render_template('newmenuitem.html', restaurant_id = restaurant_id)
+
+      newItem = MenuItem(name = name, description = description, price = price, course = course, restaurant_id = restaurant_id)
       db.session.add(newItem)
       db.session.commit()
       flash('New Menu %s Item Successfully Created' % (newItem.name))
@@ -73,7 +108,8 @@ def newMenuItem(restaurant_id):
   else:
       return render_template('newmenuitem.html', restaurant_id = restaurant_id)
 
-#Edit a menu item
+
+#edit menu items
 @main.route('/restaurant/<int:restaurant_id>/menu/<int:menu_id>/edit', methods=['GET','POST'])
 def editMenuItem(restaurant_id, menu_id):
 
@@ -81,11 +117,26 @@ def editMenuItem(restaurant_id, menu_id):
     restaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
     if request.method == 'POST':
         if request.form['name']:
-            editedItem.name = request.form['name']
+            name = request.form['name']
+            #  name should contain only letters, spaces and '
+            if not re.match("^[a-zA-Z ']*$", name):  
+                flash('valid name only include letters, space, single quotes and number.')
+                return render_template('editmenuitem.html', restaurant_id = restaurant_id, menu_id = menu_id, item = editedItem)
+            editedItem.name = name
         if request.form['description']:
-            editedItem.description = request.form['description']
+            description = request.form['description']
+            # description should contain only letters, numbers, ', comma, fullstop, and dash
+            if not re.match("^[a-zA-Z0-9 ',.-]*$", description):
+                flash('valid description only include letters, numbers, single-quote, commas, full stops, and dashes.')
+                return render_template('editmenuitem.html', restaurant_id = restaurant_id, menu_id = menu_id, item = editedItem)
+            editedItem.description = description
         if request.form['price']:
-            editedItem.price = request.form['price']
+            price = request.form['price']
+            # price contains only digits
+            if not price.isdigit():
+                flash('Valid price should only include digits.')
+                return render_template('editmenuitem.html', restaurant_id = restaurant_id, menu_id = menu_id, item = editedItem)
+            editedItem.price = price
         if request.form['course']:
             editedItem.course = request.form['course']
         db.session.add(editedItem)
@@ -94,6 +145,7 @@ def editMenuItem(restaurant_id, menu_id):
         return redirect(url_for('main.showMenu', restaurant_id = restaurant_id))
     else:
         return render_template('editmenuitem.html', restaurant_id = restaurant_id, menu_id = menu_id, item = editedItem)
+
 
 
 #Delete a menu item
