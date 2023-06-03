@@ -3,15 +3,7 @@ from project.models import Restaurant, MenuItem,  User, Group, Role
 
 def populate_db():
      #Define Roles
-    admin = Role(
-       name='admin',
-       restrictions=dict(
-        restaurants=['create', 'read', 'update', 'delete'],
-        users=['create', 'read', 'update', 'delete'],
-        menuItems=['create', 'read', 'update', 'delete'],
-        groups=['create', 'read', 'update', 'delete'],
-       )
-    )
+    
     #Menu for UrbanBurger
     restaurant1 = Restaurant(name = "Urban Burger")
 
