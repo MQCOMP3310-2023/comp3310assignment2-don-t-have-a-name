@@ -89,3 +89,15 @@ class Rating(db.Model):
     user = db.relationship(User)
     restaurant_id = db.Column(db.Integer,db.ForeignKey('restaurant.id'))
     restaurant = db.relationship(Restaurant)
+    
+    @property
+    
+    def serialize(self):
+       """Return object data in easily serializeable format"""
+       return {
+           
+           'id'          : self.id,
+           'rating'      :self.rating,
+           'userId'      :self.user_id,
+           'restaurantId':self.restaurant_id
+       }
