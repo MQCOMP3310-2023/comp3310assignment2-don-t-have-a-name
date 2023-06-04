@@ -5,7 +5,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_authorize import Authorize
-
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 # init SQLAlchemy so we can use it later in our models
 db = SQLAlchemy()
 
