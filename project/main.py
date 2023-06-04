@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
 from flask_login import login_required, current_user
-from .models import Restaurant, MenuItem
+from .models import Restaurant, MenuItem, Rating
 from sqlalchemy import asc
-from . import db
+from . import db, limiter
 import re
 
 main = Blueprint('main', __name__)
@@ -14,10 +14,32 @@ def showRestaurants():
   restaurants = db.session.query(Restaurant).order_by(asc(Restaurant.name))
   return render_template('restaurants.html', restaurants = restaurants)
 
+#add rating to restaurant
+@main.route('/restaurant/<int:restaurant_id>/menu/', methods=['POST'])
+@login_required
+@limiter.limit("5 per minute")
+def newRating(restaurant_id):
+    ratedRestaurant = db.session.query(Restaurant).filter_by(id = restaurant_id).one()
+    userRating = db.session.query(Rating).filter_by(user_id = current_user.id, restaurant_id=restaurant_id).first()
+    if userRating == None:
+        ratingValue = request.form.get("rating", type=int)
+        newRating = Rating(rating=ratingValue,restaurant_id=ratedRestaurant.id, user_id=current_user.id)
+        db.session.add(newRating)
+        db.session.commit()
+    
+        return redirect(url_for('main.showMenu', restaurant_id = restaurant_id))
+    else:
+        flash("Updated rating")
+        ratingValue = request.form.get("rating", type=int)
+        userRating.rating = ratingValue
+        db.session.commit()
+        return redirect(url_for('main.showMenu', restaurant_id = restaurant_id))
+    
 #Create a new restaurant
 
 @main.route('/restaurant/new/', methods=['GET','POST'])
 @login_required
+@limiter.limit("5 per minute")
 def newRestaurant():
   
   if request.method == 'POST':
