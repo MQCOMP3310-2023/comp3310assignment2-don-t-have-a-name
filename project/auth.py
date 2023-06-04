@@ -34,7 +34,7 @@ def login_post():
         current_app.logger.warning("User login failed")
         if user is None:
             return redirect(url_for('auth.login')) # if the user doesn't exist reload the page
-        elif user.passwordAttempts >= 5:
+        elif user.passwordAttempts >= 8:
             
             flash('Too many incorrect password attempts, try again later')
             return redirect(url_for('auth.login'), code=429)
@@ -43,7 +43,7 @@ def login_post():
             db.session.commit()
         return redirect(url_for('auth.login')) 
     # if the above check passes, then we know the user has the right credentials
-    if user.passwordAttempts >= 5:
+    elif user.passwordAttempts >= 5:
             flash('Too many incorrect password attempts, try again later')
             return redirect(url_for('auth.login'), code=429)
     else :login_user(user, remember=remember)
