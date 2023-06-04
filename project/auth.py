@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, flash, redirect, url_for,
 from flask_login import login_user, login_required, logout_user
 from sqlalchemy import text
 from .models import User
-from . import db
+from . import db, limiter
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
 
@@ -12,7 +12,9 @@ auth = Blueprint('auth', __name__)
 def login():
     return render_template('login.html')
 
+
 @auth.route('/login', methods=['POST'])
+@limiter.limit("5 per minute")
 def login_post():
     if request.form['email']:
         inEmail = request.form['email']
@@ -43,7 +45,7 @@ def login_post():
             db.session.commit()
         return redirect(url_for('auth.login')) 
     # if the above check passes, then we know the user has the right credentials
-    elif user.passwordAttempts >= 5:
+    elif user.passwordAttempts >= 8:
             flash('Too many incorrect password attempts, try again later')
             return redirect(url_for('auth.login'), code=429)
     else:
@@ -54,7 +56,9 @@ def login_post():
 def signup():
     return render_template('signup.html')
 
+
 @auth.route('/signup', methods=['POST'])
+@limiter.limit("5 per minute")
 def signup_post():
     email = request.form.get('email')
     name = request.form.get('name')
