@@ -12,7 +12,7 @@ To setup the basic website you will need to have the following installed:
 
 Pip is the package manager for Python.  You can install the remaining packages required for this task using pip. You will need to run the following:
 
-- pip install flask flask-sqlalchemy flask-login flask_authorize
+- pip install flask flask-sqlalchemy flask-login flask-limiter validate-email-address 
 
 You should have at least the following versions installed: 
 - Python             3.9.6

@@ -4,16 +4,13 @@ import hashlib
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
-from flask_authorize import Authorize
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-# init SQLAlchemy so we can use it later in our models
+# init some variables
 db = SQLAlchemy()
-
-#initalising LoginManager a
 limiter = Limiter(get_remote_address)
 
-authorize = Authorize()
+
 
 def create_app():
     app = Flask(__name__)
@@ -32,7 +29,7 @@ def create_app():
 
     db.init_app(app)
 
-    authorize.init_app(app)
+    
 
     
     limiter.init_app(app)
